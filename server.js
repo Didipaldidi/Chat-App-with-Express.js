@@ -23,7 +23,7 @@ mongoose
     console.error('Error connecting to the database:', error);
   });
 
-var Message = mongoose.model('Message', { name: String, message: String });
+var Message = mongoose.model('Message', { name: String, message: String, timestamp: { type: Date, default: Date.now } });
 
 app.get('/messages', (req, res) => {
   Message.find({})

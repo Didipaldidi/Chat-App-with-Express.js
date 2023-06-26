@@ -15,6 +15,15 @@
   <style>
     .jumbotron {
       margin-top: 50px;
+      background-color: #f8f9fa;
+    }
+
+    #messages {
+      margin-top: 20px;
+    }
+
+    .card {
+      background-color: #e9ecef;
     }
   </style>
 </head>
@@ -38,38 +47,40 @@
 <script>
   const socket = io();
 
-  $(() => {
-    $("#send").click(() => {
-      sendMessage({
-        name: $("#name").val(),
-        message: $("#message").val()
-      });
+$(() => {
+  $("#send").click(() => {
+    sendMessage({
+      name: $("#name").val(),
+      message: $("#message").val()
     });
-    getMessages();
   });
+  getMessages();
+});
 
-  socket.on('message', addMessage);
+socket.on('message', addMessage);
 
-  function addMessage(message) {
-    $("#messages").append(`
-      <div class="card mb-2">
-        <div class="card-body">
-          <h5 class="card-title">${message.name}</h5>
-          <p class="card-text">${message.message}</p>
-        </div>
+function addMessage(message) {
+  const timestamp = new Date(message.timestamp).toLocaleString(); // Get the formatted timestamp
+  $("#messages").append(`
+    <div class="card mb-2">
+      <div class="card-body">
+        <h5 class="card-title">${message.name}</h5>
+        <p class="card-text">${message.message}</p>
+        <p class="card-text">${timestamp}</p> <!-- Display the timestamp -->
       </div>
-    `);
-  }
+    </div>
+  `);
+}
 
-  function getMessages() {
-    $.get('http://localhost:3000/messages', (data) => {
-      data.forEach(addMessage);
-    });
-  }
+function getMessages() {
+  $.get('http://localhost:3000/messages', (data) => {
+    data.forEach(addMessage);
+  });
+}
 
-  function sendMessage(message) {
-    $.post('http://localhost:3000/messages', message);
-  }
+function sendMessage(message) {
+  $.post('http://localhost:3000/messages', message);
+}
 </script>
 </body>
 </html>
