@@ -50,6 +50,20 @@ app.post('/messages', (req, res) => {
     });
 });
 
+app.delete('/messages/:id', (req, res) => {
+    const messageId = req.params.id;
+    Message.findByIdAndRemove(messageId)
+      .then(() => {
+        io.emit('messageDeleted', messageId); // Emit an event to notify clients about the deleted message
+        res.sendStatus(200);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.sendStatus(500);
+      });
+  });
+
+
 io.on('connection', (socket) => {
   console.log('a user is connected');
 

@@ -45,42 +45,66 @@
   <div id="messages"></div>
 </div>
 <script>
-  const socket = io();
-
-$(() => {
-  $("#send").click(() => {
-    sendMessage({
-      name: $("#name").val(),
-      message: $("#message").val()
+    const socket = io();
+  
+    $(() => {
+      $("#send").click(() => {
+        sendMessage({
+          name: $("#name").val(),
+          message: $("#message").val()
+        });
+      });
+      getMessages();
     });
-  });
-  getMessages();
-});
-
-socket.on('message', addMessage);
-
-function addMessage(message) {
-  const timestamp = new Date(message.timestamp).toLocaleString(); // Get the formatted timestamp
-  $("#messages").append(`
-    <div class="card mb-2">
-      <div class="card-body">
-        <h5 class="card-title">${message.name}</h5>
-        <p class="card-text">${message.message}</p>
-        <p class="card-text">${timestamp}</p> <!-- Display the timestamp -->
-      </div>
-    </div>
-  `);
-}
-
-function getMessages() {
-  $.get('http://localhost:3000/messages', (data) => {
-    data.forEach(addMessage);
-  });
-}
-
-function sendMessage(message) {
-  $.post('http://localhost:3000/messages', message);
-}
-</script>
+  
+    socket.on('message', addMessage);
+    socket.on('messageDeleted', deleteMessage); // Listen for the 'messageDeleted' event
+  
+    function addMessage(message) {
+      const timestamp = new Date(message.timestamp).toLocaleString();
+      const messageId = message._id; // Get the ID of the message
+  
+      const card = `
+        <div class="card mb-2" id="message-${messageId}">
+          <div class="card-body">
+            <h5 class="card-title">${message.name}</h5>
+            <p class="card-text">${message.message}</p>
+            <p class="card-text">${timestamp}</p>
+            <button class="btn btn-danger delete-btn" data-message-id="${messageId}">Delete</button> <!-- Delete button -->
+          </div>
+        </div>
+      `;
+  
+      $("#messages").append(card);
+      $(`#message-${messageId} .delete-btn`).click(() => deleteMessageHandler(messageId)); // Attach the click event handler for the delete button
+    }
+  
+    function deleteMessage(messageId) {
+      $(`#message-${messageId}`).remove(); // Remove the deleted message from the DOM
+    }
+  
+    function deleteMessageHandler(messageId) {
+      $.ajax({
+        url: `http://localhost:3000/messages/${messageId}`,
+        type: 'DELETE',
+        success: () => {
+          console.log('Message deleted');
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  
+    function getMessages() {
+      $.get('http://localhost:3000/messages', (data) => {
+        data.forEach(addMessage);
+      });
+    }
+  
+    function sendMessage(message) {
+      $.post('http://localhost:3000/messages', message);
+    }
+  </script>
 </body>
 </html>
