@@ -36,7 +36,13 @@ mongoose
     console.error('Error connecting to the database:', error);
   });
 
-var Message = mongoose.model('Message', { name: String, message: String, timestamp: { type: Date, default: Date.now }, image: String });
+  var Message = mongoose.model('Message', {
+    name: String,
+    message: String,
+    timestamp: { type: Date, default: Date.now },
+    image: String,
+    video: String // Add the 'video' field to store the video URL
+  });
 
 app.get('/messages', (req, res) => {
   Message.find({})
@@ -49,12 +55,13 @@ app.get('/messages', (req, res) => {
     });
 });
 
-app.post('/messages', upload.single('image'), (req, res) => {
-    const message = new Message({
-      name: req.body.name,
-      message: req.body.message,
-      image: req.file ? req.file.path : null
-    });
+app.post('/messages', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'video', maxCount: 1 }]), (req, res) => {
+  const message = new Message({
+    name: req.body.name,
+    message: req.body.message,
+    image: req.files && req.files.image ? req.files.image[0].path : null, // Retrieve the image path
+    video: req.files && req.files.video ? req.files.video[0].path : null // Retrieve the video path
+  });
     message
       .save()
       .then(() => {
